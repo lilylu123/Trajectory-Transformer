@@ -145,7 +145,7 @@ def main():
 
         for id_b,batch in enumerate(tr_dl):
 
-            optim.optimizer.zero_grad()
+            optim.optimizer.zero_grad() #将所有variable的grad设置为0
             inp=(batch['src'][:,1:,2:4].to(device)-mean.to(device))/std.to(device)
             target=(batch['trg'][:,:-1,2:4].to(device)-mean.to(device))/std.to(device)
             target_c=torch.zeros((target.shape[0],target.shape[1],1)).to(device)
@@ -165,13 +165,13 @@ def main():
             loss = F.pairwise_distance(pred[:, :,0:2].contiguous().view(-1, 2),
                                        ((batch['trg'][:, :, 2:4].to(device)-mean.to(device))/std.to(device)).contiguous().view(-1, 2).to(device)).mean() + torch.mean(torch.abs(pred[:,:,2]))
             loss.backward()
-            optim.step()
+            optim.step() # 更新variable的grad
             print("train epoch %03i/%03i  batch %04i / %04i loss: %7.4f" % (epoch, args.max_epoch, id_b, len(tr_dl), loss.item()))
             epoch_loss += loss.item()
         #sched.step()
         log.add_scalar('Loss/train', epoch_loss / len(tr_dl), epoch)
         with torch.no_grad():
-            model.eval()
+            model.eval() # 不更新梯度和batchnormalize
 
             val_loss=0
             step=0
